@@ -928,47 +928,33 @@ ${optionalCardContext}
 6. Susun jawaban secara ringkas dan rapi (poin-poin atau maksimal 3-4 paragraf pendek) agar nyaman dibaca di layar smartphone.`;
         }
 
-        async function callGeminiWithBackoff(userMessage) {
-            const apiKey = "AQ.Ab8RN6JQYszEKL4B1DesRfSJrIC_eu6AhL0TxbyHimg3GsDSDA"; // Disediakan otomatis oleh environment runtime
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
+async function callGeminiWithBackoff(userMessage) {
+            const formattedHistory = chatHistory.map(msg => ({
+                role: msg.role === "model" ? "assistant" : "user",
+                content: msg.parts[0].text
+            }));
 
-            const contents = [
-                ...chatHistory,
-                {
-                    role: "user",
-                    parts: [{ text: userMessage }]
-                }
+            const messages = [
+                { role: "system", content: getSystemInstruction() },
+                ...formattedHistory,
+                { role: "user", content: userMessage }
             ];
-
-            const payload = {
-                contents: contents,
-                systemInstruction: {
-                    parts: [{ text: getSystemInstruction() }]
-                },
-                generationConfig: {
-                    temperature: 0.65,
-                    maxOutputTokens: 750
-                }
-            };
 
             const delays = [1000, 2000, 4000, 8000];
             for (let attempt = 0; attempt <= delays.length; attempt++) {
                 try {
-                    const response = await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-    },
-    body: JSON.stringify(payload)
-});
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messages })
+                    });
 
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
                     }
 
                     const data = await response.json();
-                    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    const replyText = data?.choices?.[0]?.message?.content;
 
                     if (replyText) {
                         chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
