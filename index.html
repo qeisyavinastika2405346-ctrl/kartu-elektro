@@ -929,8 +929,8 @@ ${optionalCardContext}
         }
 
         async function callGeminiWithBackoff(userMessage) {
-            const apiKey = "AQ.Ab8RN6J0vQq4T0eeL5AEe_TF9rF3Yr0pmy1WSq-67nWnuGltbQ"; // Disediakan otomatis oleh environment runtime
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const apiKey = "AQ.Ab8RN6JQYszEKL4B1DesRfSJrIC_eu6AhL0TxbyHimg3GsDSDA"; // Disediakan otomatis oleh environment runtime
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
 
             const contents = [
                 ...chatHistory,
@@ -955,10 +955,13 @@ ${optionalCardContext}
             for (let attempt = 0; attempt <= delays.length; attempt++) {
                 try {
                     const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+    },
+    body: JSON.stringify(payload)
+});
 
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
